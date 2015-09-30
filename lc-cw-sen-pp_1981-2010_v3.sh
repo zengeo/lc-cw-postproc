@@ -1,54 +1,48 @@
 #!/bin/sh
-
+#
 #-----------------
 # 30.9.2015.
-# this is version 2 of postprocessing tool for land cover and cross walking sensitivity experiments
-# minor bug in variable name for NEE is replaced
-# units are changed for GPP, NEE from Gt (C)/year into g(C) m^-2 month^-1
-# Above ground biomass is calculated
+# Perform post-processing of land cover and cross walking sensitivity experiments conducted with
+# JSBACH, JULES and ORCHIDEE land surface schemes in the frame of ESA-CCI-LC project
+# Goran Georgievski
 # 
+# LSM - land surface model, allowed value so far is JSBACH
+# plans are to implement ORCHIDEE and JULES 
 
+LSM=JSBACH  
 
-# root directory for cross-walking sensitivitiy studies are in /scratch/mpi/mpiles/thy/m300348/jsbach_expmean/LC-CW-sensitivity/
-# experiments are
+case "$LSM" in
+ "JSBACH")
+# root directory for cross-walking sensitivity experiments are in 
+# /scratch/mpi/mpiles/thy/m300348/jsbach_expmean/LC-CW-sensitivity/
+# experiment abbreviations are
 # MPI reference run with MPI PFTS
 # ESA reference run with ESA PFT
-# MIN minimum ESA biomass
-# MAX maximum ESA biomass
-# MI2 min LC min CW
-# MA2 max LC max CW
+# MIN minLC refCW
+# MAX maxLC refCW
+# MI2 minLC minCW
+# MA2 maxLC maxCW
 
-exproot=LC-CW-sensitivity
-for exper in MA2 MAX ESA MIN MI2 MPI; do 
+ exproot=LC-CW-sensitivity
+ for exper in MA2 MAX ESA MIN MI2 MPI; do 
+ indir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/"${exproot}"/"${exper}"/                      # input directory with monthly means  
+ outdir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/"${exproot}"/"${exper}"/stat/                # directory for annual and seasonal means
+ temp_dir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/"${exproot}"/"${exper}"/cdo_temp/          # temporary directory  
 
+ mkdir -p "${outdir}"
+ mkdir -p "${temp_dir}"
 
-# on NAS:
-indir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/${exproot}/${exper}/
-outdir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/${exproot}/${exper}/stat/   # directory for annual and seasonal means
-temp_dir=/scratch/mpi/mpiles/thy/m300348/jsbach_expmean/${exproot}/${exper}/cdo_temp/
+ cd "${indir}"
+ echo "${indir}"
+ mv mon_"${exper}"_jsbach_1979.tar mon_"${exper}"_jsbach_1980.tar "${temp_dir}"                           # move the files not needed for analysis into the temporary directory
+## untar if needed
+# for yy in {1981..2010}; do             
+# echo "${yy}"
+# tar -xvf mon_"${exper}"_jsbach_"${yy}".tar "${exper}"_jsbach_land_mm_"${yy}".nc "${exper}"_jsbach_veg_mm_"${yy}".nc      
+# done
+##
 
-mkdir -p ${outdir}
-mkdir -p ${temp_dir}
-
-cd ${indir}
-echo ${indir}
-pwd
-#mv mon_${exper}_jsbach_1979.tar mon_${exper}_jsbach_1980.tar ${temp_dir}
-
-#for yy in {1981..2010}; do
-#echo ${yy}
-#tar -xvf mon_${exper}_jsbach_${yy}.tar ${exper}_jsbach_land_mm_${yy}.nc ${exper}_jsbach_veg_mm_${yy}.nc      
-
-#done
-
-#--------------V2.0----------
-# e.g.: landcov_watch_cci002_jsbach_200006
-# evap_landcov_watch_cci_epoche2000_jsbach_2000_2010.nc
-
-#----------JSBACH stream ---------------
-#stream=land #jsbach
-y=1981
-y_0=$y
+y_0=1981
 y_n=2010
 
 # standard variables
